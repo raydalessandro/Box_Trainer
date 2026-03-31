@@ -1,0 +1,323 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Oswald:wght@300;400;600;700&display=swap');
+
+:root {
+--red: #e8001c;
+--green: #00c44f;
+--black: #080808;
+--gray: #181818;
+--light-gray: #282828;
+--white: #f0ece4;
+--gold: #c9a84c;
+}
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(--black);
+color: var(--white);
+font-family: ‘Oswald’, sans-serif;
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+position: relative;
+transition: background 0.5s ease;
+}
+
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
+pointer-events: none;
+z-index: 0;
+}
+
+#ambientBg {
+position: fixed; inset: 0; z-index: 0; pointer-events: none;
+background: radial-gradient(ellipse at 50% 40%, rgba(232,0,28,0.06) 0%, transparent 70%);
+transition: background 0.5s ease;
+}
+
+.corner {
+position: fixed; width: 55px; height: 55px;
+border-style: solid; border-color: var(--red);
+opacity: 0.45; z-index: 1; transition: border-color 0.5s;
+}
+.corner-tl { top: 14px; left: 14px; border-width: 3px 0 0 3px; }
+.corner-tr { top: 14px; right: 14px; border-width: 3px 3px 0 0; }
+.corner-bl { bottom: 14px; left: 14px; border-width: 0 0 3px 3px; }
+.corner-br { bottom: 14px; right: 14px; border-width: 0 3px 3px 0; }
+
+/* === SETTINGS PANEL === */
+#settingsPanel {
+display: none; position: fixed; inset: 0;
+background: rgba(4,4,4,0.97); z-index: 50;
+flex-direction: column; align-items: center; justify-content: center;
+padding: 16px; overflow-y: auto;
+}
+#settingsPanel.show { display: flex; }
+
+.settings-box {
+background: var(--gray); border: 1px solid var(--light-gray);
+width: 100%; max-width: 390px; padding: 28px 24px; position: relative;
+}
+.settings-box::before {
+content: ‘’; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+}
+.settings-title {
+font-family: ‘Black Ops One’, cursive; font-size: 1.4rem;
+letter-spacing: 0.12em; margin-bottom: 22px; text-align: center;
+}
+.settings-title span { color: var(--red); }
+
+.setting-row { margin-bottom: 18px; }
+.setting-label {
+font-size: 0.65rem; letter-spacing: 0.28em; color: var(--gold);
+text-transform: uppercase; margin-bottom: 8px;
+}
+.setting-controls { display: flex; align-items: stretch; gap: 8px; }
+.s-btn {
+font-family: ‘Black Ops One’, cursive; font-size: 1.3rem;
+width: 46px; background: var(--light-gray); color: var(--white);
+border: none; cursor: pointer; flex-shrink: 0;
+display: flex; align-items: center; justify-content: center;
+transition: background 0.15s, transform 0.1s;
+}
+.s-btn:hover { background: #383838; }
+.s-btn:active { transform: scale(0.91); }
+.s-val-wrap { flex: 1; background: var(--light-gray); text-align: center; padding: 10px 8px; }
+.s-val {
+font-family: ‘Black Ops One’, cursive; font-size: 1.8rem;
+color: var(--white); line-height: 1; display: block;
+}
+.s-sub { font-size: 0.58rem; color: rgba(240,236,228,0.3); letter-spacing: 0.15em; margin-top: 2px; display: block; }
+
+.settings-divider { height: 1px; background: var(--light-gray); margin: 18px 0; }
+.s-section-label {
+font-size: 0.6rem; letter-spacing: 0.3em; color: rgba(240,236,228,0.35);
+text-transform: uppercase; margin-bottom: 12px;
+}
+
+.sound-toggle {
+display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 14px; gap: 12px;
+}
+.sound-label { font-size: 0.75rem; letter-spacing: 0.1em; color: var(--white); flex: 1; }
+
+.toggle-switch { position: relative; width: 50px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+position: absolute; inset: 0; background: var(--light-gray); cursor: pointer; transition: 0.3s;
+}
+.toggle-slider::before {
+content: ‘’; position: absolute; height: 18px; width: 18px;
+left: 4px; bottom: 4px; background: var(--white); transition: 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--green); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(24px); }
+
+.settings-actions { display: flex; gap: 10px; margin-top: 22px; }
+
+/* === MAIN LAYOUT === */
+.container {
+position: relative; z-index: 2;
+display: flex; flex-direction: column; align-items: center;
+gap: 14px; width: 100%; max-width: 420px; padding: 14px 18px;
+}
+
+.title {
+font-family: ‘Black Ops One’, cursive;
+font-size: clamp(1.9rem, 7vw, 2.8rem);
+letter-spacing: 0.1em; color: var(--white); line-height: 1; text-align: center;
+}
+.title span {
+color: var(--red); display: block;
+font-size: clamp(0.65rem, 2.5vw, 0.85rem); letter-spacing: 0.35em;
+margin-bottom: 2px; font-family: ‘Oswald’, sans-serif; font-weight: 300;
+transition: color 0.5s;
+}
+
+.round-badge {
+display: flex; align-items: stretch;
+background: var(--gray); border: 1px solid var(--light-gray); width: 100%;
+}
+.r-cell { flex: 1; padding: 7px 10px; text-align: center; }
+.r-cell + .r-cell { border-left: 1px solid var(--light-gray); }
+.r-cell-lbl { font-size: 0.58rem; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin-bottom: 2px; }
+.r-cell-val { font-family: ‘Black Ops One’, cursive; font-size: 1.35rem; color: var(--white); line-height: 1; }
+
+/* === BIG TIMER === */
+.timer-wrap { position: relative; width: 270px; height: 270px; }
+.timer-svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+
+.t-glow  { fill: none; stroke: #e8001c; stroke-width: 22; opacity: 0.07; transition: stroke 0.5s; }
+.t-track { fill: none; stroke: #1e1e1e; stroke-width: 16; }
+.t-prog  {
+fill: none; stroke: #e8001c; stroke-width: 16; stroke-linecap: butt;
+stroke-dasharray: 723; stroke-dashoffset: 0;
+transition: stroke-dashoffset 1s linear, stroke 0.4s;
+filter: drop-shadow(0 0 12px #e8001c) drop-shadow(0 0 24px rgba(232,0,28,0.45));
+}
+.t-inner-fill { fill: #141414; transition: fill 0.5s; }
+
+.timer-inner {
+position: absolute; inset: 0;
+display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+}
+.t-phase {
+font-size: 0.62rem; letter-spacing: 0.35em; text-transform: uppercase;
+color: rgba(240,236,228,0.35); transition: color 0.4s;
+}
+.t-time {
+font-family: ‘Black Ops One’, cursive;
+font-size: 4.6rem; line-height: 1; letter-spacing: 0.03em;
+color: var(--white); transition: color 0.4s;
+text-shadow: 0 2px 24px rgba(0,0,0,0.9);
+}
+.t-time.urgent { color: #ff4400; animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0.55; } }
+.t-rlabel {
+font-size: 0.68rem; letter-spacing: 0.2em; font-weight: 600; text-transform: uppercase;
+color: rgba(240,236,228,0.4); transition: color 0.4s;
+}
+
+/* === NUMBER === */
+.number-display {
+display: flex; flex-direction: column; align-items: center; gap: 4px;
+min-height: 115px; justify-content: center;
+}
+.combo-label {
+font-size: 0.63rem; letter-spacing: 0.32em; color: rgba(240,236,228,0.35);
+text-transform: uppercase; transition: color 0.4s;
+}
+.big-number {
+font-family: ‘Black Ops One’, cursive;
+font-size: clamp(5.5rem, 22vw, 8.5rem); line-height: 1;
+color: var(--white); transition: transform 0.07s cubic-bezier(0.34,1.56,0.64,1), color 0.4s;
+text-shadow: 0 0 30px rgba(255,255,255,0.15);
+}
+.big-number.flash { transform: scale(1.2); }
+.combo-name {
+font-size: 0.78rem; letter-spacing: 0.16em; font-weight: 600;
+color: rgba(240,236,228,0.55); text-transform: uppercase; min-height: 1.3em;
+transition: color 0.4s; text-align: center; max-width: 320px; line-height: 1.5;
+}
+
+/* === STATE THEMING === */
+body.state-work { background: #030d05; }
+body.state-work #ambientBg {
+background: radial-gradient(ellipse at 50% 40%, rgba(0,196,79,0.14) 0%, transparent 65%);
+}
+body.state-work .corner { border-color: var(--green); }
+body.state-work .t-glow { stroke: var(--green); }
+body.state-work .t-prog {
+stroke: var(--green);
+filter: drop-shadow(0 0 12px var(--green)) drop-shadow(0 0 26px rgba(0,196,79,0.45));
+}
+body.state-work .t-phase { color: rgba(100,255,140,0.6); }
+body.state-work .
+t-rlabel { color: rgba(100,255,140,0.5); }
+body.state-work .title span { color: var(--green); }
+body.state-work .big-number { color: var(--green); text-shadow: 0 0 40px rgba(0,196,79,0.4); }
+body.state-work .combo-name { color: rgba(100,255,140,0.65); }
+body.state-work .combo-label { color: rgba(100,255,140,0.45); }
+body.state-work .status-dot { color: var(--green); }
+
+body.state-rest { background: #0e0202; }
+body.state-rest #ambientBg {
+background: radial-gradient(ellipse at 50% 40%, rgba(232,0,28,0.18) 0%, transparent 65%);
+}
+body.state-rest .corner { border-color: var(--red); }
+body.state-rest .t-glow { stroke: var(--red); }
+body.state-rest .t-prog {
+stroke: var(--red);
+filter: drop-shadow(0 0 12px var(--red)) drop-shadow(0 0 26px rgba(232,0,28,0.5));
+}
+body.state-rest .t-phase { color: rgba(255,80,80,0.6); }
+body.state-rest .title span { color: var(--red); }
+body.state-rest .status-dot { color: var(--red); }
+
+/* === STATUS BAR === */
+.status-bar {
+width: 100%; display: flex; align-items: center; justify-content: space-between;
+padding: 7px 12px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05);
+}
+.status-left { font-size: 0.66rem; letter-spacing: 0.18em; color: rgba(240,236,228,0.28); text-transform: uppercase; }
+.status-dot { font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; color: rgba(240,236,228,0.22); transition: color 0.4s; }
+
+/* === BUTTONS === */
+.btn-group { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; width: 100%; }
+.btn {
+font-family: ‘Oswald’, sans-serif; font-size: 0.88rem; font-weight: 700;
+letter-spacing: 0.2em; text-transform: uppercase; padding: 13px 26px;
+border: none; cursor: pointer;
+clip-path: polygon(7px 0%, 100% 0%, calc(100% - 7px) 100%, 0% 100%);
+transition: filter 0.15s, transform 0.1s, opacity 0.2s;
+}
+.btn:active { transform: scale(0.94); }
+.btn-start { background: var(--green); color: #000; font-size: 1rem; padding: 15px 44px; font-weight: 700; }
+.btn-start:hover { filter: brightness(1.15); }
+.btn-stop  { background: var(--red); color: var(--white); }
+.btn-stop:hover { filter: brightness(1.2); }
+.btn-set   { background: var(--light-gray); color: var(--white); border: 1px solid rgba(255,255,255,0.07); }
+.btn-set:hover { background: #333; }
+.btn:disabled { opacity: 0.22; cursor: not-allowed; filter: none !important; }
+
+/* === LEGEND === */
+.legend { display: flex; gap: 8px 14px; flex-wrap: wrap; justify-content: center; }
+.legend-item { font-size: 0.6rem; letter-spacing: 0.12em; color: rgba(240,236,228,0.22); text-transform: uppercase; }
+.legend-item b { color: var(--gold); }
+
+/* === FLASH === */
+.flash-bg {
+position: fixed; inset: 0; pointer-events: none; z-index: 5;
+opacity: 0; transition: opacity 0.05s; background: var(--white);
+}
+.flash-bg.show { opacity: 0.055; }
+
+/* === PULSE RING === */
+@keyframes pulseRing { 0%{transform:scale(0.88);opacity:0.9} 100%{transform:scale(1.4);opacity:0} }
+.pulse-ring {
+position: absolute; inset: -8px; border: 2px solid currentColor;
+border-radius: 50%; animation: pulseRing 0.5s ease-out forwards; pointer-events: none;
+}
+
+/* === REST CARD === */
+.rest-card {
+display: none; position: fixed; inset: 0;
+background: rgba(12,2,2,0.9); z-index: 20;
+flex-direction: column; align-items: center; justify-content: center;
+backdrop-filter: blur(3px);
+}
+.rest-card.show { display: flex; }
+.rest-inner {
+display: flex; flex-direction: column; align-items: center; gap: 10px;
+padding: 36px 56px; background: rgba(22,4,4,0.95);
+border: 1px solid rgba(232,0,28,0.25); position: relative;
+}
+.rest-inner::before {
+content: ‘’; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+background: linear-gradient(90deg, transparent, var(--red), transparent);
+}
+.rest-heading { font-family: ‘Black Ops One’, cursive; font-size: 1.1rem; letter-spacing: 0.25em; color: var(--red); }
+.rest-big { font-family: ‘Black Ops One’, cursive; font-size: 7rem; color: var(--white); line-height: 1; }
+.rest-next { font-size: 0.65rem; letter-spacing: 0.28em; color: rgba(240,236,228,0.35); text-transform: uppercase; }
+.
+rest-next b { color: var(--gold); }
+
+/* === DONE === */
+.done-overlay {
+display: none; position: fixed; inset: 0;
+background: rgba(2,10,3,0.93); z-index: 20;
+flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+}
+.done-overlay.show { display: flex; }
+.done-title { font-family: ‘Black Ops One’, cursive; font-size: 2.4rem; color: var(--green); text-align: center; text-shadow: 0 0 30px rgba(0,196,79,0.5); letter-spacing: 0.08em; }
+.done-sub { font-size: 0.75rem; letter-spacing: 0.3em; color: rgba(240,236,228,0.38); text-transform: uppercase; }
+.done-emoji { font-size: 3.8rem; }
+</style>

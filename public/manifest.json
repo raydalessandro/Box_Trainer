@@ -1,0 +1,25 @@
+{
+  "name": "BOX TRAINER",
+  "short_name": "BoxTrainer",
+  "description": "Timer allenamento boxe con combinazioni vocali",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#e8001c",
+  "background_color": "#080808",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["fitness", "sports", "health"]
+}
