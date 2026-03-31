@@ -17,7 +17,7 @@ interface BoxTrainerDB extends DBSchema {
 }
 
 const DB_NAME = 'boxtrainer-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export class StorageService {
   private db: IDBPDatabase<BoxTrainerDB> | null = null;
@@ -29,11 +29,19 @@ export class StorageService {
   async init(): Promise<void> {
     try {
       this.db = await openDB<BoxTrainerDB>(DB_NAME, DB_VERSION, {
-        upgrade(db) {
-          // Create sessions store if it doesn't exist
+        upgrade(db, oldVersion) {
+          // Create sessions store if it doesn't exist (v1)
           if (!db.objectStoreNames.contains('sessions')) {
             const store = db.createObjectStore('sessions', { keyPath: 'id' });
             store.createIndex('by-date', 'createdAt');
+          }
+
+          // Phase 1 migration: Add new fields to existing sessions (v1 → v2)
+          if (oldVersion < 2) {
+            // Mark all existing sessions as completed (they were saved on completion)
+            // No need to manually iterate - new fields will be undefined for old sessions
+            // which is acceptable (isCompleted will be checked with ?? true fallback)
+            console.log('[StorageService] Migrated to DB v2: Added session tracking fields');
           }
         },
       });
@@ -79,7 +87,14 @@ export class StorageService {
     try {
       const db = await this.ensureDB();
       const sessions = await db.getAll('sessions');
-      return sessions.sort((a, b) => b.createdAt - a.createdAt);
+
+      // Ensure backward compatibility: mark sessions without isCompleted as completed
+      return sessions
+        .map(session => ({
+          ...session,
+          isCompleted: session.isCompleted ?? true,  // Old sessions are completed
+        }))
+        .sort((a, b) => b.createdAt - a.createdAt);
     } catch (error) {
       console.error('[StorageService] Failed to get sessions:', error);
       return [];

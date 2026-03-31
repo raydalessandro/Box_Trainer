@@ -30,6 +30,7 @@ describe('StorageService', () => {
     totalDuration: 1080, // 18 minutes
     punchesShown: 120,
     createdAt: Date.now(),
+    isCompleted: true,  // Default to completed
     ...overrides,
   });
 

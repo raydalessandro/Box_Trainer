@@ -152,6 +152,33 @@ background: var(--gray); border: 1px solid var(--light-gray); width: 100%;
 .r-cell-lbl { font-size: 0.58rem; letter-spacing: 0.22em; color: var(--gold); text-transform: uppercase; margin-bottom: 2px; }
 .r-cell-val { font-family: ‘Black Ops One’, cursive; font-size: 1.35rem; color: var(--white); line-height: 1; }
 
+/* === SESSION STATUS === */
+.session-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--gray);
+  border: 1px solid var(--light-gray);
+  margin-top: 8px;
+  width: 100%;
+}
+.session-indicator {
+  font-size: 0.7rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.session-time {
+  font-family: ‘Black Ops One’, cursive;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  color: var(--white);
+}
+
 /* === BIG TIMER === */
 .timer-wrap { position: relative; width: 250px; height: 250px; }
 .timer-svg { position: absolute; inset: 0; transform: rotate(-90deg); }
@@ -273,6 +300,107 @@ transition: filter 0.15s, transform 0.1s, opacity 0.2s;
 .legend { display: flex; gap: 8px 14px; flex-wrap: wrap; justify-content: center; }
 .legend-item { font-size: 0.6rem; letter-spacing: 0.12em; color: rgba(240,236,228,0.22); text-transform: uppercase; }
 .legend-item b { color: var(--gold); }
+
+/* === SESSION HISTORY === */
+.session-history-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(4,4,4,0.97); z-index: 50;
+  flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: 16px; overflow-y: auto;
+}
+.session-history-overlay.show { display: flex; }
+
+.session-history-panel {
+  background: var(--gray); border: 1px solid var(--light-gray);
+  width: 100%; max-width: 420px; max-height: 92vh;
+  padding: 20px 18px; position: relative;
+  overflow-y: auto;
+}
+.session-history-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+}
+
+.session-history-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.session-history-title {
+  font-family: 'Black Ops One', cursive; font-size: 1.2rem;
+  letter-spacing: 0.1em; color: var(--white);
+}
+.session-close {
+  background: none; border: none; color: var(--white);
+  font-size: 1.5rem; cursor: pointer; padding: 0; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.6; transition: opacity 0.2s;
+}
+.session-close:hover { opacity: 1; }
+
+.session-list {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.session-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--light-gray);
+  padding: 12px 14px;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+
+.session-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px;
+}
+.session-icon {
+  font-size: 1.1rem;
+}
+.session-date {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+.session-details {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: rgba(240,236,228,0.7);
+  margin-bottom: 6px;
+}
+
+.session-status {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  opacity: 0.8;
+}
+.session-status.completed { color: var(--green); }
+.session-status.incomplete { color: var(--red); }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+.empty-text {
+  font-family: 'Black Ops One', cursive;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.empty-hint {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: rgba(240,236,228,0.4);
+  max-width: 280px;
+}
 
 /* === FLASH === */
 .flash-bg {

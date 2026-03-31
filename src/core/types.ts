@@ -49,6 +49,13 @@ export interface WorkoutSession {
   totalDuration: number;      // Total seconds trained
   punchesShown: number;       // Total punch combos displayed
   createdAt: number;          // Unix timestamp
+
+  // Phase 1: Session tracking fields
+  startedAt?: number;         // Unix timestamp when session started
+  endedAt?: number;           // Unix timestamp when session ended
+  sessionDuration?: number;   // Actual elapsed time in seconds (wall clock)
+  isCompleted: boolean;       // Whether workout finished or stopped early
+  stoppedEarly?: boolean;     // True if user clicked STOP before completing all rounds
 }
 
 // ============================================================================

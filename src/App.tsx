@@ -6,11 +6,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { TimerEngine } from '@core/TimerEngine';
 import { ConfigManager } from '@core/ConfigManager';
 import { StorageService } from '@storage/StorageService';
+import { SessionManager } from '@core/SessionManager';
 import type { TrainingState, PunchNumber, WorkoutConfig, WorkoutSession } from '@core/types';
 import { PUNCH_COMBOS, TIMER_CIRCLE_CIRCUMFERENCE } from '@core/types';
 import { RestOverlay } from '@components/RestOverlay';
 import { DoneOverlay } from '@components/DoneOverlay';
 import { SettingsModal } from '@components/SettingsModal';
+import { SessionHistory } from '@components/SessionHistory';
 
 function App() {
   // Config & Engine (memoized to prevent recreation)
@@ -18,6 +20,7 @@ function App() {
   const [config, setConfig] = useState<WorkoutConfig>(configManager.get());
   const timerEngine = useMemo(() => new TimerEngine(config), []);
   const storageService = useMemo(() => new StorageService(), []);
+  const sessionManager = useMemo(() => new SessionManager(), []);
 
   // Training State
   const [state, setState] = useState<TrainingState>('idle');
@@ -26,6 +29,12 @@ function App() {
   const [restLeft, setRestLeft] = useState(config.restDuration);
   const [currentPunch, setCurrentPunch] = useState<PunchNumber | null>(null);
   const [showFlash, setShowFlash] = useState(false);
+
+  // Session tracking state
+  const [isSessionActive, setIsSessionActive] = useState(false);
+  const [sessionElapsed, setSessionElapsed] = useState(0);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
   // Settings Modal State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -46,7 +55,14 @@ function App() {
         setCurrentPunch(null);
       }
     });
-    timerEngine.onRoundChange((round) => setCurrentRound(round));
+    timerEngine.onRoundChange((round) => {
+      setCurrentRound(round);
+      // Update session metrics when round changes
+      if (isSessionActive) {
+        const timerState = timerEngine.getState();
+        sessionManager.updateMetrics(round - 1, timerState.punchesShown);
+      }
+    });
     timerEngine.onTick((time) => {
       // Update appropriate time based on current state
       const currentState = timerEngine.getState().state;
@@ -64,36 +80,41 @@ function App() {
 
     // Save session when workout completes
     timerEngine.onComplete(() => {
-      const state = timerEngine.getState();
-      const session: WorkoutSession = {
-        id: `session-${Date.now()}`,
-        date: new Date(),
-        createdAt: Date.now(),
-        completedRounds: state.currentRound - 1, // -1 because currentRound increments after last round
-        totalDuration: state.totalRounds * config.roundDuration + (state.totalRounds - 1) * config.restDuration,
-        punchesShown: state.punchesShown,
-        config: { ...config },
-      };
-
-      storageService.addSession(session).catch((error) => {
-        console.error('[App] Failed to save session:', error);
-      });
+      if (isSessionActive) {
+        const timerState = timerEngine.getState();
+        const session = sessionManager.endSession(config, timerState);
+        storageService.addSession(session).catch((error) => {
+          console.error('[App] Failed to save session:', error);
+        });
+        setIsSessionActive(false);
+        setSessionElapsed(0);
+      }
     });
 
     return () => {
       timerEngine.dispose();
       storageService.dispose();
     };
-  }, [timerEngine, storageService, config]);
+  }, [timerEngine, storageService, config, isSessionActive, sessionManager]);
 
   // Update engine when config changes
   useEffect(() => {
     timerEngine.updateConfig(config);
   }, [config, timerEngine]);
 
-  // Timer Controls
-  const handleStart = () => timerEngine.start();
-  const handleStop = () => timerEngine.stop();
+  // Session elapsed timer (updates every second)
+  useEffect(() => {
+    if (!isSessionActive) return;
+
+    const interval = setInterval(() => {
+      const elapsed = sessionManager.getElapsedTime();
+      if (elapsed !== null) {
+        setSessionElapsed(elapsed);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isSessionActive, sessionManager]);
 
   // Settings Handler
   const handleSaveSettings = (newConfig: WorkoutConfig) => {
@@ -112,6 +133,13 @@ function App() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Format session time MM:SS
+  const formatSessionTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   // Body state class
@@ -157,6 +185,13 @@ function App() {
         onSave={handleSaveSettings}
       />
 
+      {/* Session History */}
+      <SessionHistory
+        isVisible={isHistoryOpen}
+        sessions={sessions}
+        onClose={() => setIsHistoryOpen(false)}
+      />
+
       {/* Main Container */}
       <div className="container">
         {/* Title */}
@@ -184,6 +219,14 @@ function App() {
             <div className="r-cell-val">{formatTime(config.restDuration)}</div>
           </div>
         </div>
+
+        {/* Session Status */}
+        {isSessionActive && (
+          <div className="session-status">
+            <span className="session-indicator">🔴</span>
+            <span className="session-time">Sessione: {formatSessionTime(sessionElapsed)}</span>
+          </div>
+        )}
 
         {/* Timer Circle */}
         <div className="timer-wrap">
@@ -245,26 +288,74 @@ function App() {
 
         {/* Buttons */}
         <div className="btn-group">
-          <button
-            className="btn btn-start"
-            onClick={handleStart}
-            disabled={state !== 'idle' && state !== 'done'}
-          >
-            INIZIA
-          </button>
-          <button
-            className="btn btn-stop"
-            onClick={handleStop}
-            disabled={state === 'idle' || state === 'done'}
-          >
-            STOP
-          </button>
+          {!isSessionActive && state === 'idle' && (
+            <button
+              className="btn btn-start"
+              onClick={() => {
+                sessionManager.startSession();
+                setIsSessionActive(true);
+                timerEngine.start();
+              }}
+            >
+              INIZIA ALLENAMENTO
+            </button>
+          )}
+
+          {isSessionActive && (
+            <>
+              {state === 'idle' && (
+                <button
+                  className="btn btn-start"
+                  onClick={() => timerEngine.start()}
+                >
+                  INIZIA
+                </button>
+              )}
+              {state !== 'idle' && state !== 'done' && (
+                <button
+                  className="btn btn-stop"
+                  onClick={() => timerEngine.stop()}
+                >
+                  STOP
+                </button>
+              )}
+              <button
+                className="btn btn-stop"
+                onClick={() => {
+                  if (confirm('Sei sicuro di voler terminare l\'allenamento?')) {
+                    const timerState = timerEngine.getState();
+                    const session = sessionManager.endSession(config, timerState);
+                    storageService.addSession(session).catch((error) => {
+                      console.error('[App] Failed to save session:', error);
+                    });
+                    setIsSessionActive(false);
+                    setSessionElapsed(0);
+                    timerEngine.reset();
+                  }
+                }}
+              >
+                CHIUDI ALLENAMENTO
+              </button>
+            </>
+          )}
+
           <button
             className="btn btn-set"
             onClick={() => setIsSettingsOpen(true)}
             disabled={state === 'work' || state === 'rest'}
           >
             ⚙ SET
+          </button>
+
+          <button
+            className="btn btn-set"
+            onClick={async () => {
+              const recentSessions = await storageService.getRecentSessions(10);
+              setSessions(recentSessions);
+              setIsHistoryOpen(true);
+            }}
+          >
+            📊 STORICO
           </button>
         </div>
 
