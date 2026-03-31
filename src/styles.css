@@ -55,26 +55,28 @@ opacity: 0.45; z-index: 1; transition: border-color 0.5s;
 #settingsPanel {
 display: none; position: fixed; inset: 0;
 background: rgba(4,4,4,0.97); z-index: 50;
-flex-direction: column; align-items: center; justify-content: center;
-padding: 16px; overflow-y: auto;
+flex-direction: column; align-items: center; justify-content: flex-start;
+padding: 12px 16px; overflow-y: auto;
 }
 #settingsPanel.show { display: flex; }
 
 .settings-box {
 background: var(--gray); border: 1px solid var(--light-gray);
-width: 100%; max-width: 390px; padding: 28px 24px; position: relative;
+width: 100%; max-width: 390px; max-height: 95vh;
+padding: 20px 24px 18px; position: relative;
+overflow-y: auto;
 }
 .settings-box::before {
 content: ‘’; position: absolute; top: 0; left: 0; right: 0; height: 3px;
 background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
 }
 .settings-title {
-font-family: ‘Black Ops One’, cursive; font-size: 1.4rem;
-letter-spacing: 0.12em; margin-bottom: 22px; text-align: center;
+font-family: ‘Black Ops One’, cursive; font-size: 1.3rem;
+letter-spacing: 0.12em; margin-bottom: 16px; text-align: center;
 }
 .settings-title span { color: var(--red); }
 
-.setting-row { margin-bottom: 18px; }
+.setting-row { margin-bottom: 14px; }
 .setting-label {
 font-size: 0.65rem; letter-spacing: 0.28em; color: var(--gold);
 text-transform: uppercase; margin-bottom: 8px;
@@ -96,15 +98,15 @@ color: var(--white); line-height: 1; display: block;
 }
 .s-sub { font-size: 0.58rem; color: rgba(240,236,228,0.3); letter-spacing: 0.15em; margin-top: 2px; display: block; }
 
-.settings-divider { height: 1px; background: var(--light-gray); margin: 18px 0; }
+.settings-divider { height: 1px; background: var(--light-gray); margin: 14px 0; }
 .s-section-label {
 font-size: 0.6rem; letter-spacing: 0.3em; color: rgba(240,236,228,0.35);
-text-transform: uppercase; margin-bottom: 12px;
+text-transform: uppercase; margin-bottom: 10px;
 }
 
 .sound-toggle {
 display: flex; align-items: center; justify-content: space-between;
-margin-bottom: 14px; gap: 12px;
+margin-bottom: 10px; gap: 12px;
 }
 .sound-label { font-size: 0.75rem; letter-spacing: 0.1em; color: var(--white); flex: 1; }
 
@@ -120,13 +122,13 @@ left: 4px; bottom: 4px; background: var(--white); transition: 0.3s;
 .toggle-switch input:checked + .toggle-slider { background: var(--green); }
 .toggle-switch input:checked + .toggle-slider::before { transform: translateX(24px); }
 
-.settings-actions { display: flex; gap: 10px; margin-top: 22px; }
+.settings-actions { display: flex; gap: 10px; margin-top: 16px; }
 
 /* === MAIN LAYOUT === */
 .container {
 position: relative; z-index: 2;
 display: flex; flex-direction: column; align-items: center;
-gap: 14px; width: 100%; max-width: 420px; padding: 14px 18px;
+gap: 10px; width: 100%; max-width: 420px; padding: 8px 18px 12px;
 }
 
 .title {
@@ -151,7 +153,7 @@ background: var(--gray); border: 1px solid var(--light-gray); width: 100%;
 .r-cell-val { font-family: ‘Black Ops One’, cursive; font-size: 1.35rem; color: var(--white); line-height: 1; }
 
 /* === BIG TIMER === */
-.timer-wrap { position: relative; width: 270px; height: 270px; }
+.timer-wrap { position: relative; width: 250px; height: 250px; }
 .timer-svg { position: absolute; inset: 0; transform: rotate(-90deg); }
 
 .t-glow  { fill: none; stroke: #e8001c; stroke-width: 22; opacity: 0.07; transition: stroke 0.5s; }
@@ -188,7 +190,7 @@ color: rgba(240,236,228,0.4); transition: color 0.4s;
 /* === NUMBER === */
 .number-display {
 display: flex; flex-direction: column; align-items: center; gap: 4px;
-min-height: 115px; justify-content: center;
+min-height: 95px; justify-content: center;
 }
 .combo-label {
 font-size: 0.63rem; letter-spacing: 0.32em; color: rgba(240,236,228,0.35);
