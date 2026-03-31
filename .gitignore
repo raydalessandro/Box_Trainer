@@ -29,3 +29,9 @@ __pycache__/
 *.pyc
 generate_icons.py
 logo_app.jpg
+
+# Testing
+screenshots/
+test_layout.js
+screenshot_*.cjs
+screenshot_*.js
