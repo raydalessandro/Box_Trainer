@@ -5,6 +5,7 @@
 
 import { beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import 'fake-indexeddb/auto';
+import '@testing-library/jest-dom';
 
 // ==========================================================================
 // LOCALSTORAGE MOCK
