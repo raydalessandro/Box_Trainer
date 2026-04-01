@@ -144,3 +144,47 @@ export const VALIDATION = {
   restDuration: { min: 10, max: 300 },
   numberInterval: { min: 1, max: 10 },
 } as const;
+
+// ============================================================================
+// PHASE 2: ADVANCED ANALYTICS
+// ============================================================================
+
+export interface AdvancedStats {
+  // Totals
+  totalSessions: number;
+  completedSessions: number;
+  incompleteSessions: number;
+  totalTimeSeconds: number;
+  totalRounds: number;
+  totalPunches: number;
+
+  // Averages
+  avgSessionDuration: number;
+  avgRoundsPerSession: number;
+  avgPunchesPerRound: number;
+
+  // Streaks
+  currentStreak: number;
+  longestStreak: number;
+  lastWorkoutDate: Date | null;
+
+  // Trends (last 7/30 days)
+  last7Days: number;
+  last30Days: number;
+  thisWeek: number;
+  thisMonth: number;
+}
+
+export interface CalendarDay {
+  date: string; // YYYY-MM-DD
+  sessionCount: number;
+  totalDuration: number;
+  intensity: 'none' | 'low' | 'medium' | 'high';
+}
+
+export interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastWorkoutDate: Date | null;
+  streakDates: string[]; // Array of YYYY-MM-DD dates in current streak
+}

@@ -485,3 +485,171 @@ flex-direction: column; align-items: center; justify-content: center; gap: 14px;
 .confirm-actions .btn {
   flex: 1;
 }
+
+/* === STATS OVERLAY === */
+.stats-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(4,4,4,0.97); z-index: 50;
+  overflow-y: auto;
+  padding: 16px;
+}
+.stats-overlay.show { display: block; }
+
+.stats-panel {
+  background: var(--gray); border: 1px solid var(--light-gray);
+  max-width: 500px; margin: 0 auto;
+  padding: 20px 18px;
+  position: relative;
+}
+.stats-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+}
+
+.stats-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.stats-title {
+  font-family: 'Black Ops One', cursive;
+  font-size: 1.2rem; letter-spacing: 0.1em;
+  color: var(--white);
+}
+.stats-close {
+  background: none; border: none;
+  color: var(--white); font-size: 1.5rem;
+  cursor: pointer; padding: 0;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.6; transition: opacity 0.2s;
+}
+.stats-close:hover { opacity: 1; }
+
+/* Summary Cards */
+.stats-summary {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 10px; margin-bottom: 24px;
+}
+.stat-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--light-gray);
+  padding: 16px 12px;
+  text-align: center;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.stat-value {
+  font-family: 'Black Ops One', cursive;
+  font-size: 1.8rem; color: var(--gold);
+  line-height: 1; margin-bottom: 6px;
+}
+.stat-label {
+  font-size: 0.7rem; letter-spacing: 0.1em;
+  color: rgba(240,236,228,0.5);
+  text-transform: uppercase;
+}
+
+/* Sections */
+.stats-section {
+  margin-bottom: 24px;
+}
+.stats-section-title {
+  font-family: 'Black Ops One', cursive;
+  font-size: 0.9rem; letter-spacing: 0.08em;
+  color: var(--gold); margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+/* Calendar Heatmap */
+.calendar-heatmap {
+  background: rgba(255,255,255,0.02);
+  padding: 12px;
+  border: 1px solid var(--light-gray);
+}
+
+.calendar-months {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.calendar-month-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  color: rgba(240,236,228,0.4);
+  text-align: center;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.calendar-day:hover {
+  transform: scale(1.2);
+}
+
+.calendar-day.intensity-none { background: rgba(255,255,255,0.05); }
+.calendar-day.intensity-low { background: var(--red); opacity: 0.3; }
+.calendar-day.intensity-medium { background: var(--red); opacity: 0.6; }
+.calendar-day.intensity-high { background: var(--red); opacity: 1.0; }
+
+.calendar-legend {
+  display: flex; align-items: center; gap: 4px;
+  justify-content: flex-end;
+}
+.calendar-legend-label {
+  font-size: 0.6rem;
+  color: rgba(240,236,228,0.4);
+}
+.calendar-legend-item {
+  width: 12px; height: 12px;
+  border-radius: 2px;
+}
+
+/* Trends */
+.stats-trends {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.trend-row {
+  display: flex; justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.trend-label {
+  font-size: 0.75rem;
+  color: rgba(240,236,228,0.7);
+}
+.trend-value {
+  font-family: 'Black Ops One', cursive;
+  font-size: 0.9rem;
+  color: var(--gold);
+}
+
+/* Records */
+.stats-records {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.record-item {
+  display: flex; justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.record-label {
+  font-size: 0.75rem;
+  color: rgba(240,236,228,0.7);
+}
+.record-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--white);
+}

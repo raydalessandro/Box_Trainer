@@ -83,6 +83,8 @@ export class TimerEngine {
   reset(): void {
     this.stop();
     this.currentRound = 1;
+    this.punchesShown = 0;
+    this.lastPunch = null;
     this.callbacks.onRoundChange?.(this.currentRound);
   }
 

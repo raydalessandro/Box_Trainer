@@ -2,18 +2,19 @@
  * BOX TRAINER — Main App Component (Demo Minimalista)
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { TimerEngine } from '@core/TimerEngine';
 import { ConfigManager } from '@core/ConfigManager';
 import { StorageService } from '@storage/StorageService';
 import { SessionManager } from '@core/SessionManager';
-import type { TrainingState, PunchNumber, WorkoutConfig, WorkoutSession } from '@core/types';
+import type { TrainingState, PunchNumber, WorkoutConfig, WorkoutSession, AdvancedStats, CalendarDay } from '@core/types';
 import { PUNCH_COMBOS, TIMER_CIRCLE_CIRCUMFERENCE } from '@core/types';
 import { RestOverlay } from '@components/RestOverlay';
 import { DoneOverlay } from '@components/DoneOverlay';
 import { SettingsModal } from '@components/SettingsModal';
 import { SessionHistory } from '@components/SessionHistory';
 import { ConfirmModal } from '@components/ConfirmModal';
+import { StatsOverlay } from '@components/StatsOverlay';
 
 function App() {
   // Config & Engine (memoized to prevent recreation)
@@ -37,11 +38,28 @@ function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
+  // Refs to capture latest values in callbacks (avoid stale closures)
+  const isSessionActiveRef = useRef(isSessionActive);
+  const configRef = useRef(config);
+
+  useEffect(() => {
+    isSessionActiveRef.current = isSessionActive;
+  }, [isSessionActive]);
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
   // Settings Modal State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Confirm Modal State
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // Stats Overlay State
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [stats, setStats] = useState<AdvancedStats | null>(null);
+  const [calendarData, setCalendarData] = useState<CalendarDay[]>([]);
 
   // Initialize storage service
   useEffect(() => {
@@ -50,7 +68,7 @@ function App() {
     });
   }, [storageService]);
 
-  // Setup engine callbacks
+  // Setup engine callbacks (only once on mount)
   useEffect(() => {
     timerEngine.onStateChange((newState) => {
       setState(newState);
@@ -61,11 +79,6 @@ function App() {
     });
     timerEngine.onRoundChange((round) => {
       setCurrentRound(round);
-      // Update session metrics when round changes
-      if (isSessionActive) {
-        const timerState = timerEngine.getState();
-        sessionManager.updateMetrics(round - 1, timerState.punchesShown);
-      }
     });
     timerEngine.onTick((time) => {
       // Update appropriate time based on current state
@@ -84,9 +97,12 @@ function App() {
 
     // Save session when workout completes
     timerEngine.onComplete(() => {
-      if (isSessionActive) {
+      if (isSessionActiveRef.current) {
         const timerState = timerEngine.getState();
-        const session = sessionManager.endSession(config, timerState);
+        // When workout completes, currentRound is incremented PAST the last round
+        // So completedRounds = totalRounds (all rounds were completed)
+        sessionManager.updateMetrics(configRef.current.rounds, timerState.punchesShown);
+        const session = sessionManager.endSession(configRef.current, timerState);
         storageService.addSession(session).catch((error) => {
           console.error('[App] Failed to save session:', error);
         });
@@ -99,7 +115,7 @@ function App() {
       timerEngine.dispose();
       storageService.dispose();
     };
-  }, [timerEngine, storageService, config, isSessionActive, sessionManager]);
+  }, [timerEngine, storageService, sessionManager]);
 
   // Update engine when config changes
   useEffect(() => {
@@ -196,6 +212,14 @@ function App() {
         onClose={() => setIsHistoryOpen(false)}
       />
 
+      {/* Stats Overlay */}
+      <StatsOverlay
+        isVisible={isStatsOpen}
+        stats={stats}
+        calendarData={calendarData}
+        onClose={() => setIsStatsOpen(false)}
+      />
+
       {/* Confirm Modal */}
       <ConfirmModal
         isVisible={showConfirm}
@@ -205,6 +229,13 @@ function App() {
         cancelText="ANNULLA"
         onConfirm={() => {
           const timerState = timerEngine.getState();
+          // For early termination, calculate completed rounds based on current state
+          // If in 'work' state, current round is in progress (not completed)
+          // If in 'rest' state, current round just completed
+          const completedRounds = timerState.state === 'rest'
+            ? timerState.currentRound
+            : Math.max(0, timerState.currentRound - 1);
+          sessionManager.updateMetrics(completedRounds, timerState.punchesShown);
           const session = sessionManager.endSession(config, timerState);
           storageService.addSession(session).catch((error) => {
             console.error('[App] Failed to save session:', error);
@@ -370,6 +401,21 @@ function App() {
             }}
           >
             📊 STORICO
+          </button>
+
+          <button
+            className="btn btn-set"
+            onClick={async () => {
+              const [advancedStats, calendar] = await Promise.all([
+                storageService.getStatsAdvanced('all'),
+                storageService.getCalendarData(90),
+              ]);
+              setStats(advancedStats);
+              setCalendarData(calendar);
+              setIsStatsOpen(true);
+            }}
+          >
+            📈 STATISTICHE
           </button>
         </div>
 
