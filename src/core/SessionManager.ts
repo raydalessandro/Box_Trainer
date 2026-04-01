@@ -138,7 +138,7 @@ export class SessionManager {
    */
   updateMetrics(rounds: number, punches: number): void {
     if (!this.isActive()) {
-      console.warn('SessionManager: Cannot update metrics - no active session');
+      // Silently ignore if no active session (expected behavior)
       return;
     }
 

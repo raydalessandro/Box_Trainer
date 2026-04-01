@@ -449,3 +449,39 @@ flex-direction: column; align-items: center; justify-content: center; gap: 14px;
 .done-title { font-family: ‘Black Ops One’, cursive; font-size: 2.4rem; color: var(--green); text-align: center; text-shadow: 0 0 30px rgba(0,196,79,0.5); letter-spacing: 0.08em; }
 .done-sub { font-size: 0.75rem; letter-spacing: 0.3em; color: rgba(240,236,228,0.38); text-transform: uppercase; }
 .done-emoji { font-size: 3.8rem; }
+
+/* === CONFIRM MODAL === */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(4,4,4,0.95); z-index: 60;
+  flex-direction: column; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.confirm-overlay.show { display: flex; }
+
+.confirm-box {
+  background: var(--gray); border: 2px solid var(--red);
+  padding: 24px; max-width: 340px; width: 90%;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+
+.confirm-title {
+  font-family: 'Black Ops One', cursive;
+  font-size: 1.1rem; letter-spacing: 0.1em;
+  color: var(--red); text-align: center;
+  margin-bottom: 16px;
+}
+
+.confirm-message {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.9rem; letter-spacing: 0.05em;
+  color: var(--white); text-align: center;
+  margin-bottom: 20px; line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex; gap: 10px;
+}
+.confirm-actions .btn {
+  flex: 1;
+}

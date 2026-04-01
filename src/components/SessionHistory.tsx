@@ -40,7 +40,7 @@ export function SessionHistory({ isVisible, sessions, onClose }: SessionHistoryP
   };
 
   return (
-    <div className="session-history-overlay" onClick={handleBackdropClick}>
+    <div className={`session-history-overlay ${isVisible ? 'show' : ''}`} onClick={handleBackdropClick}>
       <div className="session-history-panel">
         <div className="session-history-header">
           <h2 className="session-history-title">📊 STORICO ALLENAMENTI</h2>

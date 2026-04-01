@@ -13,6 +13,7 @@ import { RestOverlay } from '@components/RestOverlay';
 import { DoneOverlay } from '@components/DoneOverlay';
 import { SettingsModal } from '@components/SettingsModal';
 import { SessionHistory } from '@components/SessionHistory';
+import { ConfirmModal } from '@components/ConfirmModal';
 
 function App() {
   // Config & Engine (memoized to prevent recreation)
@@ -38,6 +39,9 @@ function App() {
 
   // Settings Modal State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Confirm Modal State
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Initialize storage service
   useEffect(() => {
@@ -192,6 +196,27 @@ function App() {
         onClose={() => setIsHistoryOpen(false)}
       />
 
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isVisible={showConfirm}
+        title="CONFERMA CHIUSURA"
+        message="Sei sicuro di voler terminare l'allenamento?"
+        confirmText="TERMINA"
+        cancelText="ANNULLA"
+        onConfirm={() => {
+          const timerState = timerEngine.getState();
+          const session = sessionManager.endSession(config, timerState);
+          storageService.addSession(session).catch((error) => {
+            console.error('[App] Failed to save session:', error);
+          });
+          setIsSessionActive(false);
+          setSessionElapsed(0);
+          timerEngine.reset();
+          setShowConfirm(false);
+        }}
+        onCancel={() => setShowConfirm(false)}
+      />
+
       {/* Main Container */}
       <div className="container">
         {/* Title */}
@@ -321,18 +346,7 @@ function App() {
               )}
               <button
                 className="btn btn-stop"
-                onClick={() => {
-                  if (confirm('Sei sicuro di voler terminare l\'allenamento?')) {
-                    const timerState = timerEngine.getState();
-                    const session = sessionManager.endSession(config, timerState);
-                    storageService.addSession(session).catch((error) => {
-                      console.error('[App] Failed to save session:', error);
-                    });
-                    setIsSessionActive(false);
-                    setSessionElapsed(0);
-                    timerEngine.reset();
-                  }
-                }}
+                onClick={() => setShowConfirm(true)}
               >
                 CHIUDI ALLENAMENTO
               </button>
